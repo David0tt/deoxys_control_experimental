@@ -1,4 +1,8 @@
 """Example script of moving robot joint positions."""
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 import argparse
 import pickle
 import threading
@@ -19,6 +23,8 @@ from deoxys.utils.log_utils import get_deoxys_example_logger
 
 logger = get_deoxys_example_logger()
 
+import logging
+logging.basicConfig(level=logging.DEBUG)
 
 def parse_args():
     parser = argparse.ArgumentParser()

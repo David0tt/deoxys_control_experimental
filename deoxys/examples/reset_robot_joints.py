@@ -1,4 +1,10 @@
 """Moving robot joint positions to initial pose for starting new experiments."""
+
+import os, sys
+# print(os.getcwd())
+# print(sys.path)
+sys.path.append(os.getcwd())
+
 import argparse
 import pickle
 import threading
@@ -17,6 +23,11 @@ from deoxys.utils.log_utils import get_deoxys_example_logger
 
 logger = get_deoxys_example_logger()
 
+import logging
+# logging.getLogger().setLevel(logging.DEBUG)
+
+logger.setLevel(logging.DEBUG)
+
 
 def parse_args():
     parser = argparse.ArgumentParser()
@@ -33,10 +44,12 @@ def parse_args():
 
 
 def main():
+    logger.info(f"starting the program")
+
     args = parse_args()
 
     robot_interface = FrankaInterface(
-        config_root + f"/{args.interface_cfg}", use_visualizer=False
+        config_root + f"/{args.interface_cfg}", use_visualizer=False # use_visualizer=False
     )
     controller_cfg = YamlConfig(config_root + f"/{args.controller_cfg}").as_easydict()
 
@@ -62,6 +75,9 @@ def main():
     action = reset_joint_positions + [-1.0]
 
     while True:
+        
+        logger.debug(f"robot_interface._state_buffer: {robot_interface._state_buffer}")
+
         if len(robot_interface._state_buffer) > 0:
             logger.info(f"Current Robot joint: {np.round(robot_interface.last_q, 3)}")
             logger.info(f"Desired Robot joint: {np.round(robot_interface.last_q_d, 3)}")
@@ -76,11 +92,13 @@ def main():
                 < 1e-3
             ):
                 break
+
         robot_interface.control(
             controller_type=controller_type,
             action=action,
             controller_cfg=controller_cfg,
         )
+    logger.info(f"Finished the while loop")
     robot_interface.close()
 
 

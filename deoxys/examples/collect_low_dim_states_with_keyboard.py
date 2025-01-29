@@ -22,7 +22,8 @@ from deoxys.utils import YamlConfig
 from deoxys.utils.config_utils import (add_robot_config_arguments,
                                        get_default_controller_config)
 from deoxys.utils.input_utils import input2action
-from deoxys.utils.io_devices import SpaceMouse
+# from deoxys.utils.io_devices import Keyboard
+from deoxys.utils.io_devices.keyboard_controller import Keyboard
 from deoxys.utils.log_utils import get_deoxys_example_logger
 
 logger = get_deoxys_example_logger()
@@ -30,16 +31,6 @@ logger = get_deoxys_example_logger()
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "--vendor_id",
-        type=int,
-        default=9583,
-    )
-    parser.add_argument(
-        "--product_id",
-        type=int,
-        default=50734,
-    )
     parser.add_argument("--controller-type", type=str, default="OSC_POSE")
     parser.add_argument(
         "--controller-cfg", type=str, default="osc-position-controller.yml"
@@ -71,13 +62,9 @@ def main():
     experiment_id += 1
     folder = str(args.folder / f"run{experiment_id}")
 
-    using_space_mouse = False
-    try:
-        device = SpaceMouse(vendor_id=args.vendor_id, product_id=args.product_id)
-        device.start_control()
-        using_space_mouse = True
-    except OSError:
-        pass
+
+    device = Keyboard(pos_sensitivity=0.04, rot_sensitivity=0.04)
+    device.start_control()
 
     # Franka Interface
     if args.interface_cfg[0] != "/":
@@ -106,19 +93,16 @@ def main():
 
     time.sleep(2)
 
-    while i < 400:
+    while i < 10000:
         logger.info(i)
         i += 1
         start_time = time.time_ns()
-        if using_space_mouse:
-            action, grasp = input2action(
-                device=device,
-                controller_type=controller_type,
-            )
-            if action is None:
-                break
-        else:
-            action = action = np.array([0.0] * 8) # just fill an empty action
+        action, grasp = input2action(
+            device=device,
+            controller_type=controller_type,
+        )
+        if action is None:
+            break
 
         # set unused orientation dims to 0
         if controller_type == "OSC_YAW":

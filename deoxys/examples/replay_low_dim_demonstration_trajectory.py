@@ -1,4 +1,9 @@
 """Replay demonstration trajectories."""
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+
 
 import argparse
 import json
@@ -60,8 +65,8 @@ def main():
         action_sequence = demo_file["data/actions"]
 
     # Initialize franka interface
-    device = SpaceMouse(vendor_id=args.vendor_id, product_id=args.product_id)
-    device.start_control()
+    # device = SpaceMouse(vendor_id=args.vendor_id, product_id=args.product_id)
+    # device.start_control()
 
     # Franka Interface
     robot_interface = FrankaInterface(os.path.join(config_root, args.interface_cfg))
